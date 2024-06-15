@@ -1,39 +1,85 @@
+use dames_italianes::{Board, Position, Team, BOARD_HEIGHT, BOARD_WIDTH};
 use macroquad::{prelude::*, text};
 
 
+const WINDOW_LENGTH: i32 = 720;
+
+//#[macroquad::main(window_conf)]
+//async fn main() {
+//    // Variables
+//    //let background_color         = Color::from_rgba(24, 25, 38, 255);
+//    //let grid_thickness           = 2.5;
+//    //let grid_color               = Color::from_rgba(138, 173, 244, 255);
+//    //let text_color               = Color::from_rgba(198, 160, 246, 200);
+//
+//    //// Main loop
+//    //loop {
+//    //    draw_grid(grid_thickness, grid_color, grid_spacing);
+//    //    draw_controls(text_color, grid_spacing);
+//
+//    //    next_frame().await
+//    //}
+//
+//}
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    // Variables
-    let background_color         = Color::from_rgba(24, 25, 38, 255);
-    let grid_thickness           = 2.5;
-    let grid_color               = Color::from_rgba(138, 173, 244, 255);
-    let grid_spacing             = 30;
-    let text_color               = Color::from_rgba(198, 160, 246, 200);
 
-    // Main loop
+
+    // Tweakables
+    let grid_spacing = screen_width() as usize / BOARD_WIDTH;
+    let background_white = Color::from_rgba(255, 255, 255, 255);
+    let background_black = Color::from_rgba(0, 0, 0, 255);
+
+    // Game state
+    let mut board = Board::default();
+    let mut current_player = Team::White;
+    let mut selected_pos: Option<Position> = None;
+
     loop {
-        draw_grid(grid_thickness, grid_color, grid_spacing);
-        draw_controls(text_color, grid_spacing);
+        dbg!(&board);
+        dbg!(selected_pos);
 
-        next_frame().await
+        clear_background(background_white);
+        draw_black_squares(background_black, grid_spacing);
+
+        if is_mouse_button_pressed(MouseButton::Left) {
+            let (globl_x, globl_y) = mouse_position();
+            let local_x = (globl_x as usize / grid_spacing).min(BOARD_WIDTH - 1);
+            let local_y = (globl_y as usize / grid_spacing).min(BOARD_HEIGHT - 1);
+
+            let new_pos = Position::new(local_x, local_y);
+
+            if let Some(old_pos) = selected_pos {
+                if board.move_is_legal(old_pos, new_pos) {
+                    board.make_move(old_pos, new_pos).expect("SAFETY: We just checked validity");
+                }
+
+                selected_pos = None;
+
+            } else { // Nothing selected
+                if board[new_pos].is_some() {
+                    selected_pos = Some(new_pos);
+                }
+            }
+        }
+
+    }
+
+}
+
+fn draw_black_squares(black: Color, grid_spacing: usize) {
+    for y in 0..8 {
+        for x in 0..8 {
+            if x + y % 2 == 0 {
+                let true_x = x*grid_spacing;
+                let true_y = y*grid_spacing;
+                draw_rectangle(true_x as f32, true_y as f32, grid_spacing as f32, grid_spacing as f32, black);
+            }
+        }
     }
 }
 
-fn draw_controls(text_color: Color, grid_spacing: usize) {
-    // let grid_spacing = grid_spacing as f32;
-    // let tps = (time_between_ticks + 1.0) / (1.0/get_fps() as f32 + time_between_ticks);
-    // let is_p = if paused { "On" } else { "Off" };
-
-    // draw_rectangle(0.0, 0.0,
-    //                 grid_spacing*10.0, grid_spacing*7.0,
-    //                 Color::from_rgba(0, 0, 0, 200));
-    // draw_text("U: Increase Speed",                 10.0, grid_spacing*0.8 + 0.0*grid_spacing, grid_spacing, text_color);
-    // draw_text("D: Decrease Speed",                 10.0, grid_spacing*0.8 + 1.0*grid_spacing, grid_spacing, text_color);
-    // draw_text("R: Reset",                          10.0, grid_spacing*0.8 + 2.0*grid_spacing, grid_spacing, text_color);
-    // draw_text(&format!("Space: Pause ({is_p})"),   10.0, grid_spacing*0.8 + 3.0*grid_spacing, grid_spacing, text_color);
-    // draw_text(&format!("Speed: {tps:.2} tps",),    10.0, grid_spacing*0.8 + 5.0*grid_spacing, grid_spacing, text_color);
-}
 fn draw_grid(grid_thickness: f32, grid_color: Color, grid_spacing: usize) {
     for y in (0..screen_height() as usize).step_by(grid_spacing) {
         draw_line(0.0, y as f32,
@@ -52,8 +98,8 @@ fn window_conf() -> Conf {
         window_title: "Game of Life".to_owned(),
         fullscreen: false,
         window_resizable: true,
-        window_width: 1080,
-        window_height: 720,
+        window_width: WINDOW_LENGTH,
+        window_height: WINDOW_LENGTH,
         ..Default::default()
     }
 }
