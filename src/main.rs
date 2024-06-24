@@ -7,29 +7,27 @@ const WINDOW_LENGTH: i32 = 720;
 //#[macroquad::main(window_conf)]
 //async fn main() {
 //    // Variables
-//    //let background_color         = Color::from_rgba(24, 25, 38, 255);
-//    //let grid_thickness           = 2.5;
-//    //let grid_color               = Color::from_rgba(138, 173, 244, 255);
-//    //let text_color               = Color::from_rgba(198, 160, 246, 200);
+//    let background_color         = Color::from_rgba(24, 25, 38, 255);
+//    let grid_thickness           = 2.5;
+//    let grid_color               = Color::from_rgba(138, 173, 244, 255);
+//    let text_color               = Color::from_rgba(198, 160, 246, 200);
 //
-//    //// Main loop
-//    //loop {
-//    //    draw_grid(grid_thickness, grid_color, grid_spacing);
-//    //    draw_controls(text_color, grid_spacing);
+//    // Main loop
+//    loop {
+//        clear_background(WHITE);
 //
-//    //    next_frame().await
-//    //}
+//        next_frame().await
+//    }
 //
 //}
 
 #[macroquad::main(window_conf)]
 async fn main() {
 
-
     // Tweakables
     let grid_spacing = screen_width() as usize / BOARD_WIDTH;
-    let background_white = Color::from_rgba(255, 255, 255, 255);
-    let background_black = Color::from_rgba(0, 0, 0, 255);
+    let background_white = WHITE;
+    let background_black = BLACK;
 
     // Game state
     let mut board = Board::default();
@@ -37,8 +35,8 @@ async fn main() {
     let mut selected_pos: Option<Position> = None;
 
     loop {
-        dbg!(&board);
-        dbg!(selected_pos);
+        //dbg!(&board);
+        //dbg!(selected_pos);
 
         clear_background(background_white);
         draw_black_squares(background_black, grid_spacing);
@@ -64,6 +62,8 @@ async fn main() {
             }
         }
 
+
+        next_frame().await
     }
 
 }
@@ -71,7 +71,7 @@ async fn main() {
 fn draw_black_squares(black: Color, grid_spacing: usize) {
     for y in 0..8 {
         for x in 0..8 {
-            if x + y % 2 == 0 {
+            if (x + y) % 2 == 0 {
                 let true_x = x*grid_spacing;
                 let true_y = y*grid_spacing;
                 draw_rectangle(true_x as f32, true_y as f32, grid_spacing as f32, grid_spacing as f32, black);
@@ -95,9 +95,9 @@ fn draw_grid(grid_thickness: f32, grid_color: Color, grid_spacing: usize) {
 
 fn window_conf() -> Conf {
     Conf {
-        window_title: "Game of Life".to_owned(),
+        window_title: "Dames".to_owned(),
         fullscreen: false,
-        window_resizable: true,
+        window_resizable: false,
         window_width: WINDOW_LENGTH,
         window_height: WINDOW_LENGTH,
         ..Default::default()
