@@ -45,14 +45,33 @@ impl Board {
     /// If the player can move again, this function returns `true`, else `false`.
     pub fn make_move(&mut self, start: Position, end: Position) -> Result<bool, MoveError> {
         if let Some(piece) = self[start] {
-            todo!()
+            let mut can_move_again = false;
+            if !self.move_is_legal(start, end) { return Err(MoveError::IllegalMove); }
+
+            // We know it's legal and possible: do it
+            self[end] = self[start];
+            self[start] = None;
+
+            for i in start.row.min(end.row)..start.row.max(end.row) {
+                for j in start.col.min(end.col)..start.col.max(end.col) {
+                    let p = Position {row: i, col: j};
+                    // If the predicate is false, the `is_lega` function did a whoopsie
+                    if self[p].is_some_and(|s| s.team != piece.team) { can_move_again = true; }
+                    self[p] = None; // kills you kills you kills you kills you kills you kills you--
+                }
+            }
+
+            Ok(can_move_again)
         } else {
             Err(MoveError::NoPieceThere)
         }
     }
 
     pub fn move_is_legal(&self, from: Position, to: Position) -> bool {
-        todo!()
+        if let Some(piece_to_move) = self[from] {
+            todo!("There is so much to write here")
+
+        } else { false }
     }
 
     pub fn legal_moves(&self, pos: Position) -> impl Iterator<Item = Position> + '_ {
