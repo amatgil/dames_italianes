@@ -26,11 +26,16 @@ async fn main() {
 
         clear_background(background_white);
         draw_black_squares(background_black, grid_spacing);
+        dbg!(&selected_pos);
+        draw_selected_pos(&selected_pos, 5.0, GREEN, grid_spacing);
+
+        if is_mouse_button_pressed(MouseButton::Right) { selected_pos = None; }
 
         if is_mouse_button_pressed(MouseButton::Left) {
             let (globl_x, globl_y) = mouse_position();
-            let local_x = (globl_x as usize / grid_spacing).min(BOARD_WIDTH - 1);
-            let local_y = (globl_y as usize / grid_spacing).min(BOARD_HEIGHT - 1);
+            let local_x = (globl_x as usize / grid_spacing).min(BOARD_WIDTH - 1).max(0);
+            let local_y = (globl_y as usize / grid_spacing).min(BOARD_HEIGHT - 1).max(0);
+            dbg!(local_x, local_y);
 
             let new_pos = Position::new(local_x, local_y);
 
@@ -65,6 +70,24 @@ async fn main() {
         next_frame().await
     }
 
+}
+
+fn draw_selected_pos(sel: &Option<Position>, thickness: f32, color: Color, grid_spacing: usize) {
+    let f = |k: usize| (k*grid_spacing) as f32;
+    if let Some(p) = sel {
+        draw_line(f(p.col), f(p.row),
+                  f(p.col+1), f(p.row),
+                  thickness, color);
+        draw_line(f(p.col), f(p.row),
+                  f(p.col), f(p.row+1),
+                  thickness, color);
+        draw_line(f(p.col+1), f(p.row),
+                  f(p.col+1), f(p.row),
+                  thickness, color);
+        draw_line(f(p.col), f(p.row+1),
+                  f(p.col), f(p.row+1),
+                  thickness, color);
+    }
 }
 
 fn draw_black_squares(black: Color, grid_spacing: usize) {

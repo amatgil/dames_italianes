@@ -37,7 +37,7 @@ pub enum MoveError {
 }
 
 impl Position {
-    pub fn new(y: usize, x: usize) -> Position { Self { row: y, col: x } }
+    pub fn new(x: usize, y: usize) -> Position { Self { row: y, col: x } }
 }
 
 impl Board {
