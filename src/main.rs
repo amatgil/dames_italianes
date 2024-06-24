@@ -1,25 +1,11 @@
-use dames_italianes::{Board, Position, Team, BOARD_HEIGHT, BOARD_WIDTH};
+use dames_italianes::{Board, Position, SquareKind, Team, BOARD_HEIGHT, BOARD_WIDTH};
 use macroquad::{prelude::*, text};
 
+mod textures;
+
+use crate::textures::*;
 
 const WINDOW_LENGTH: i32 = 720;
-
-//#[macroquad::main(window_conf)]
-//async fn main() {
-//    // Variables
-//    let background_color         = Color::from_rgba(24, 25, 38, 255);
-//    let grid_thickness           = 2.5;
-//    let grid_color               = Color::from_rgba(138, 173, 244, 255);
-//    let text_color               = Color::from_rgba(198, 160, 246, 200);
-//
-//    // Main loop
-//    loop {
-//        clear_background(WHITE);
-//
-//        next_frame().await
-//    }
-//
-//}
 
 #[macroquad::main(window_conf)]
 async fn main() {
@@ -62,6 +48,19 @@ async fn main() {
             }
         }
 
+        for (p, ssq) in board.iterate() {
+            if let Some(sq) = ssq {
+                let texture = match sq.kind {
+                    SquareKind::Peça => pawn_texture(sq.team),
+                    SquareKind::Dama => pawn_texture(sq.team),
+                };
+                draw_texture(&texture,
+                             (p.col*grid_spacing) as f32,
+                             (p.row*grid_spacing) as f32,
+                             WHITE);
+            }
+        }
+
 
         next_frame().await
     }
@@ -74,7 +73,9 @@ fn draw_black_squares(black: Color, grid_spacing: usize) {
             if (x + y) % 2 == 0 {
                 let true_x = x*grid_spacing;
                 let true_y = y*grid_spacing;
-                draw_rectangle(true_x as f32, true_y as f32, grid_spacing as f32, grid_spacing as f32, black);
+                draw_rectangle(true_x as f32, true_y as f32,
+                               grid_spacing as f32,
+                               grid_spacing as f32, black);
             }
         }
     }
