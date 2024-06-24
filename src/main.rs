@@ -1,5 +1,6 @@
 use dames_italianes::{Board, Position, SquareKind, Team, BOARD_HEIGHT, BOARD_WIDTH};
 use macroquad::{prelude::*, text};
+use std::ops::Not; 
 
 mod textures;
 
@@ -21,12 +22,8 @@ async fn main() {
     let mut selected_pos: Option<Position> = None;
 
     loop {
-        //dbg!(&board);
-        //dbg!(selected_pos);
-
         clear_background(background_white);
         draw_black_squares(background_black, grid_spacing);
-        dbg!(&selected_pos);
         draw_selected_pos(&selected_pos, 5.0, GREEN, grid_spacing);
 
         if is_mouse_button_pressed(MouseButton::Right) { selected_pos = None; }
@@ -35,13 +32,19 @@ async fn main() {
             let (globl_x, globl_y) = mouse_position();
             let local_x = (globl_x as usize / grid_spacing).min(BOARD_WIDTH - 1).max(0);
             let local_y = (globl_y as usize / grid_spacing).min(BOARD_HEIGHT - 1).max(0);
-            dbg!(local_x, local_y);
 
             let new_pos = Position::new(local_x, local_y);
 
             if let Some(old_pos) = selected_pos {
-                if board.move_is_legal(old_pos, new_pos) {
-                    board.make_move(old_pos, new_pos).expect("SAFETY: We just checked validity");
+                let move_result = board.make_move(old_pos, new_pos);
+
+                if let Ok(can_move_again) = move_result
+                {
+                    if !can_move_again { current_player = current_player.not() }
+                }
+                else if let Err(e) = move_result
+                {
+                    println!("[INFO]: {e}");
                 }
 
                 selected_pos = None;

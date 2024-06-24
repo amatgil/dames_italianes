@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::{Index, IndexMut}};
+use std::{fmt::Display, ops::{Index, IndexMut, Not}};
 
 mod textures;
 use textures::*;
@@ -44,7 +44,11 @@ impl Board {
     /// Assumes the turn is valid. Assuming no errors: moves the piece at position `start` to position `end`.
     /// If the player can move again, this function returns `true`, else `false`.
     pub fn make_move(&mut self, start: Position, end: Position) -> Result<bool, MoveError> {
-        todo!()
+        if let Some(piece) = self[start] {
+            todo!()
+        } else {
+            Err(MoveError::NoPieceThere)
+        }
     }
 
     pub fn move_is_legal(&self, from: Position, to: Position) -> bool {
@@ -112,5 +116,26 @@ impl Display for Position {
         let letter: char = (self.col as u8 + b'a') as char;
         let number = self.row + 1;
         write!(f, "{letter}{number}")
+    }
+}
+
+impl Display for MoveError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MoveError::NoPieceThere => write!(f, "no piece there"),
+            MoveError::IllegalMove => write!(f, "move is illegal"),
+
+        }
+    }
+}
+
+impl Not for Team {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Team::White => Team::Black,
+            Team::Black => Team::White,
+        }
     }
 }
